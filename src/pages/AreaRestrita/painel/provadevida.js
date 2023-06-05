@@ -1,15 +1,23 @@
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Table, Row, Rows } from 'react-native-table-component';
+import { useNavigation } from '@react-navigation/native';
 
 const Provadevida = () => {
-  
+  const navigation = useNavigation();
+
+  const handleFormProvaDeVida = () => {
+    navigation.navigate('FormProvaVida');
+  };
 
   return (
     <View>
       <View style={styles.cardContainer}>
         <View style={styles.card}>
-          <TouchableOpacity style={styles.button}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={handleFormProvaDeVida}
+          >
             <Text style={styles.buttonText}>Realizar prova de vida</Text>
           </TouchableOpacity>
         </View>
@@ -17,9 +25,7 @@ const Provadevida = () => {
 
       <View style={styles.cardContainer}>
         <View style={styles.card}>
-          <Table borderStyle={styles.tableBorder}>
-           
-          </Table>
+          <Table borderStyle={styles.tableBorder}>{/* Seus componentes de tabela aqui */}</Table>
         </View>
       </View>
     </View>
@@ -53,7 +59,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
   },
-  
 });
 
 export default Provadevida;

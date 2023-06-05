@@ -10,7 +10,7 @@ function Inicio({ navigation, route }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`http://192.168.1.8/api/serve/cpf?cpf=${cpf}`);
+        const response = await fetch(`http://172.26.94.98/api/serve/cpf?cpf=${cpf}`);
         console.log('Enviando requisição:', { cpf: cpf });
         if (response.ok) {
           const data = await response.json();
