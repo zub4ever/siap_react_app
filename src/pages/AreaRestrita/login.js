@@ -14,10 +14,10 @@ const MyComponent = ({ navigation }) => {
     if (loggedIn) {
       navigation.reset({
         index: 0,
-        routes: [{ name: 'Inicio' }],
+        routes: [{ name: 'Inicio', params: { cpf } }],
       });
     }
-  }, [loggedIn, navigation]);
+  }, [loggedIn, navigation, cpf]);
 
   const handleLogin = () => {
     const formattedCpf = cpf.replace(/\D/g, ''); // Remove pontos e traço do CPF
@@ -31,12 +31,15 @@ const MyComponent = ({ navigation }) => {
       body: JSON.stringify({ cpf: cpfWithMask, matricula }),
     };
 
-    fetch('http://172.26.94.98/api/login', requestOptions)
+    fetch('http://192.168.1.8/api/login', requestOptions)
       .then((response) => response.json())
       .then((data) => {
         if (data.token) {
+
           setToken(data.token);
           setLoggedIn(true);
+          setCpf(cpfWithMask); // Atualiza o estado do CPF
+
         } else {
           // Exibir mensagem de erro ou tomar outra ação em caso de falha no login
         }
