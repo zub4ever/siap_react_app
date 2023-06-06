@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, TextInput, StyleSheet, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, StyleSheet, Modal, Dimensions, Image } from 'react-native';
 import { Formik, Field } from 'formik';
-import * as ImagePicker from 'expo-image-picker';
 import { Camera } from 'expo-camera';
-import {FontAwesome} from '@expo/vector-icons';
+import { FontAwesome } from '@expo/vector-icons';
+
 const initialValues = {
   etapa1: {
     rua: '',
@@ -21,7 +21,14 @@ const initialValues = {
 
 const MyForm = () => {
   const [etapaAtual, setEtapaAtual] = useState(1);
-  
+  const [cameraPermission, setCameraPermission] = useState(null);
+  const [cameraType, setCameraType] = useState(Camera.Constants.Type.back);
+  const [showCamera, setShowCamera] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [capturedPhoto, setCapturedPhoto] = useState(null);
+  const [foto_doc_frente, setFotoDocFrente] = useState(null);
+  const [foto_doc_verso, setFotoDocVerso] = useState(null);
+  const [foto_com_documento, setFotoComDocumento] = useState(null);
 
   const avancarEtapa = () => {
     setEtapaAtual(etapaAtual + 1);
@@ -36,26 +43,44 @@ const MyForm = () => {
     setSubmitting(false);
   };
 
- 
-  const [type, setType] = useState(Camera.Constants.Type.back);
-  const [hasPermission, setHaspermission] = useState(null);
-  
+  const handleCapture = async (camera) => {
+    const photo = await camera.takePictureAsync();
+    setCapturedPhoto(photo);
+    setShowModal(true);
+  };
+
+  const handleStorePhoto = () => {
+    if (etapaAtual === 2) {
+      if (!foto_doc_frente) {
+        setFotoDocFrente(capturedPhoto);
+      } else if (!foto_doc_verso) {
+        setFotoDocVerso(capturedPhoto);
+      } else if (!foto_com_documento) {
+        setFotoComDocumento(capturedPhoto);
+      }
+    }
+    setShowModal(false);
+    setShowCamera(false);
+    console.log("Foto capturada:", capturedPhoto);
+  };
+
   useEffect(() => {
-
     (async () => {
-
-        const {status} = await Camera.requestCameraPermissionsAsync();
-        setHaspermission (status ==='granted');
+      const { status } = await Camera.requestCameraPermissionsAsync();
+      setCameraPermission(status === 'granted');
     })();
-  },[]);
+  }, []);
 
-  if(hasPermission === null){
-    return <View/>;
-  }
-  if(hasPermission === false){
-    return <Text>Acesso negado!</Text>;
+  if (cameraPermission === null) {
+    return <View />;
   }
 
+  if (cameraPermission === false) {
+    return <Text>Acesso negado à câmera!</Text>;
+  }
+
+  const screenWidth = Dimensions.get('window').width;
+  const screenHeight = Dimensions.get('window').height;
 
   return (
     <Formik initialValues={initialValues} onSubmit={handleSubmit}>
@@ -77,33 +102,31 @@ const MyForm = () => {
               <Text style={styles.title}>Dados de identificação</Text>
               {/* Campos de entrada para dados de identificação */}
               {/* ... */}
-              
 
               <TouchableOpacity style={styles.button} onPress={voltarEtapa}>
                 <Text style={styles.buttonText}>Etapa Anterior</Text>
               </TouchableOpacity>
 
-              
-                <View style={styles.cameraContainer}>
-                  <Camera style={{flaex:1,backgroundColor:'transparent',flexDirection: 'row'}}>
-                    <TouchableOpacity style = {{position: 'absolute', bottom: 20, left : 20}}
-                    onPress={()=>{
-                        setType(
-                            type === Camera.Constants.Type.back
-                            ?Camera.Constants.Type.front
-                            :Camera.Constants.Type.back
-                        );
-                    }}
-                    >
-                        <Text style = {{fontSize: 16 , marginBottom: 13 , color: 'FFF'}}>Trocar</Text>
-                </ TouchableOpacity>
-                </Camera>
-                 <TouchableOpacity style ={styles.buttonCamera}>
-                    <FontAwesome name = "camera" size ={20} color = "FFF"/>
-                 </TouchableOpacity>
-                </View>
-              
+              <TouchableOpacity
+                style={[styles.buttonCamera, foto_doc_frente && styles.buttonCameraGreen]}
+                onPress={() => setShowCamera(true)}
+              >
+                <Text style={styles.buttonText}>Frente do documento</Text>
+              </TouchableOpacity>
 
+              <TouchableOpacity
+                style={[styles.buttonCamera, foto_doc_verso && styles.buttonCameraGreen]}
+                onPress={() => setShowCamera(true)}
+              >
+                <Text style={styles.buttonText}>Verso do documento</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.buttonCamera, foto_com_documento && styles.buttonCameraGreen]}
+                onPress={() => setShowCamera(true)}
+              >
+                <Text style={styles.buttonText}>Foto segurando o documento</Text>
+              </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.button}
@@ -114,6 +137,52 @@ const MyForm = () => {
               </TouchableOpacity>
             </View>
           )}
+
+          <Modal visible={showCamera} animationType="slide">
+            <View style={styles.cameraContainer}>
+              <Camera
+                style={[styles.camera, { aspectRatio: 1 }]}
+                type={cameraType}
+                ratio="1:1"
+                ref={(ref) => {
+                  camera = ref;
+                }}
+              >
+                <TouchableOpacity
+                  style={styles.flipButton}
+                  onPress={() => {
+                    setCameraType(
+                      cameraType === Camera.Constants.Type.back
+                        ? Camera.Constants.Type.front
+                        : Camera.Constants.Type.back
+                    );
+                  }}
+                >
+                  <Text style={styles.buttonText}>Trocar</Text>
+                </TouchableOpacity>
+              </Camera>
+              <TouchableOpacity
+                style={styles.captureButton}
+                onPress={() => handleCapture(camera)}
+              >
+                <FontAwesome name="camera" size={20} color="#fff" />
+              </TouchableOpacity>
+            </View>
+          </Modal>
+
+          <Modal visible={showModal} animationType="slide">
+            <View style={[styles.modalContainer, { width: screenWidth, height: screenHeight }]}>
+              {capturedPhoto && (
+                <Image source={{ uri: capturedPhoto.uri }} style={styles.capturedPhoto} />
+              )}
+              <TouchableOpacity style={styles.button} onPress={handleStorePhoto}>
+                <Text style={styles.buttonText}>Usar Foto</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.button} onPress={() => setShowModal(false)}>
+                <Text style={styles.buttonText}>Tirar Outra Foto</Text>
+              </TouchableOpacity>
+            </View>
+          </Modal>
         </View>
       )}
     </Formik>
@@ -151,6 +220,20 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
   },
+  buttonCamera: {
+    backgroundColor: '#007bff',
+    borderRadius: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    marginTop: 10,
+  },
+  buttonCameraGreen: {
+    backgroundColor: 'green',
+    borderRadius: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    marginTop: 10,
+  },
   cameraContainer: {
     flex: 1,
     alignItems: 'center',
@@ -159,16 +242,33 @@ const styles = StyleSheet.create({
   camera: {
     flex: 1,
     width: '100%',
-    aspectRatio: 1,
   },
-  buttonCamera:
-  {
+  flipButton: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    backgroundColor: '#007bff',
+    borderRadius: 20,
+    padding: 10,
+  },
+  captureButton: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor:'#121212',
-    borderRadius: 10,
-    margin: 20,
-    height: 50
+    backgroundColor: '#007bff',
+    borderRadius: 50,
+    width: 60,
+    height: 60,
+    marginBottom: 20,
+  },
+  modalContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  capturedPhoto: {
+    width: '100%',
+    height: '80%',
+    marginBottom: 20,
   },
 });
 

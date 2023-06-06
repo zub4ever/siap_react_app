@@ -31,7 +31,7 @@ const MyComponent = ({ navigation }) => {
       body: JSON.stringify({ cpf: cpfWithMask, matricula }),
     };
 
-    fetch('http://172.26.94.98/api/login', requestOptions)
+    fetch('http://192.168.1.9/api/login', requestOptions)
       .then((response) => response.json())
       .then((data) => {
         if (data.token) {
