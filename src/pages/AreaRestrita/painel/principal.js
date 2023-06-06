@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import axios from 'axios';
+import moment from 'moment';
 
 function Inicio({ navigation, route }) {
   const { cpf } = route.params;
@@ -10,7 +10,7 @@ function Inicio({ navigation, route }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`http://192.168.1.9/api/serve/cpf?cpf=${cpf}`);
+        const response = await fetch(`http://172.26.94.98/api/serve/cpf?cpf=${cpf}`);
         console.log('Enviando requisição:', { cpf: cpf });
         if (response.ok) {
           const data = await response.json();
@@ -28,14 +28,16 @@ function Inicio({ navigation, route }) {
 
   const handleProvaDeVida = () => {
     navigation.navigate('ProvaVida');
+    navigation.navigate('FormProvaVida', { cpf: cpf });
+
   };
 
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+    <View style={{ flex: 1, alignItems: 'center', backgroundColor: 'rgb(0,206,209)', justifyContent: 'center' }}>
       {/* Renderizar os dados retornados pela API */}
       {serveData && (
         <View style={styles.container}>
-          <Text style={styles.name}>{serveData.nm_servidor}</Text>
+          <Text style={[styles.name, { textAlign: 'center' }]}>{serveData.nm_servidor}</Text>
           <View style={styles.infoContainer}>
             <View style={styles.info}>
               <Text style={styles.infoTitle}>Matrícula</Text>
@@ -47,12 +49,12 @@ function Inicio({ navigation, route }) {
             </View>
             <View style={styles.info}>
               <Text style={styles.infoTitle}>Data Nascimento</Text>
-              <Text style={styles.infoText}>{serveData.data_nascimento}</Text>
+              <Text style={styles.infoText}>{moment(serveData.data_nascimento).format('DD/MM/YYYY')}</Text>
             </View>
           </View>
         </View>
       )}
-  
+
       <TouchableOpacity
         style={[styles.cardContainer, { backgroundColor: 'rgb(0, 123, 255)' }]}
         onPress={handleProvaDeVida}
@@ -61,7 +63,7 @@ function Inicio({ navigation, route }) {
       </TouchableOpacity>
     </View>
   );
-  
+
 
 
   //
@@ -75,14 +77,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 5,
     borderColor: 'gray',
-    backgroundColor: 'rgb(0, 123, 255)',
+    backgroundColor: 'rgb(30,144,255)',
     width: '90%',
   },
   name: {
     alignItems: 'center',
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 12, 
+    marginBottom: 12,
     color: 'white',
   },
   infoContainer: {
@@ -109,6 +111,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgb(0, 123, 255)',
     padding: 10,
     borderRadius: 5,
+
   },
   cardText: {
     color: 'white',

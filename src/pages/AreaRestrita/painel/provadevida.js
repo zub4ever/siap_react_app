@@ -34,24 +34,28 @@ const Provadevida = () => {
 
 const styles = StyleSheet.create({
   cardContainer: {
-    marginVertical: 20,
-    marginHorizontal: 30,
+    marginVertical: 10,
+    marginHorizontal: 20,
     shadowColor: '#f8f8f8',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
     borderRadius: 10,
+    
   },
   card: {
     backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 16,
+    borderRadius: 10,
+    padding: 18,
   },
   button: {
     backgroundColor: '#007bff',
     borderRadius: 4,
-    paddingVertical: 6,
-    paddingHorizontal: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    marginTop: 16,
+    justifyContent: 'center', // Adicionado para centralizar verticalmente
+    alignItems: 'center',
   },
   buttonText: {
     color: '#fff',

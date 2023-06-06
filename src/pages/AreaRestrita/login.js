@@ -4,7 +4,7 @@ import { View, ImageBackground, Text, StyleSheet, Dimensions, TextInput, Button 
 const { width, height } = Dimensions.get('window');
 
 const MyComponent = ({ navigation }) => {
-  const imagem = require('../../imagens/slide1.jpg');
+  const imagem = require('../../imagens/login.jpg');
   const [cpf, setCpf] = useState('');
   const [matricula, setMatricula] = useState('');
   const [token, setToken] = useState('');
@@ -31,7 +31,7 @@ const MyComponent = ({ navigation }) => {
       body: JSON.stringify({ cpf: cpfWithMask, matricula }),
     };
 
-    fetch('http://192.168.1.9/api/login', requestOptions)
+    fetch('http://172.26.94.98/api/login', requestOptions)
       .then((response) => response.json())
       .then((data) => {
         if (data.token) {
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.8)',
     padding: 20,
     borderRadius: 10,
-    width: '80%',
+    width: '90%',
   },
   input: {
     width: '100%',

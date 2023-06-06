@@ -5,13 +5,13 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 const ENTRIES = [
     {
-        illustration: require('../../imagens/slide1.jpg'),
+        illustration: require('../../imagens/slide1.png'),
     },
     {
-        illustration: require('../../imagens/slide2.jpg'),
+        illustration: require('../../imagens/slide2.png'),
     },
     {
-        illustration: require('../../imagens/slide3.jpg'),
+        illustration: require('../../imagens/slide3.png'),
     },
 ];
 
@@ -56,8 +56,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     image: {
-        width: screenWidth,
-        height: screenHeight,
+        width: '100%',
+        height: '100%',
     },
     loginButton: {
         position: 'absolute',
@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
         right: 20,
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#f0f0f0',
+        backgroundColor: '#41BCFF',
         paddingVertical: 10,
         paddingHorizontal: 15,
         borderRadius: 5,
@@ -77,9 +77,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
       },
-    
-    
-
 });
 
 export default Home;
