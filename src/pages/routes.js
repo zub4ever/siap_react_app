@@ -11,6 +11,7 @@ import Home from "./Home/home";
 import Inicio from './AreaRestrita/painel/principal';
 import ProvaVida from './AreaRestrita/painel/provadevida';
 import FormProvaVida from './AreaRestrita/painel/formProvaVida';
+import MyCamera from "./AreaRestrita/painel/formTeste";
 
 const Stack = createStackNavigator();
 
@@ -58,6 +59,7 @@ const Routes = () => {
           })}
         />
         <Stack.Screen name="ProvaVida" component={ProvaVida} options={{ headerTitle: 'Prova de vida' }} />
+        <Stack.Screen name="MyCamera" component={MyCamera} options={{ headerTitle: 'MyCamera' }} />
         <Stack.Screen name="FormProvaVida" component={FormProvaVida} options={{ headerTitle: 'Nova Prova de vida' }} />
       </Stack.Navigator>
 

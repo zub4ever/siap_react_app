@@ -7,6 +7,8 @@ import axios from 'axios';
 import { useRoute } from "@react-navigation/native";
 import moment from 'moment';
 import { TextInputMask } from 'react-native-masked-text';
+import * as ImagePicker from 'expo-image-picker';
+
 
 
 
@@ -68,12 +70,12 @@ const MyForm = () => {
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
       const formData = new FormData();
-  
+
       // Adicione os campos de etapa1 ao FormData
       Object.entries(values.etapa1).forEach(([key, value]) => {
         formData.append(`etapa1.${key}`, value);
       });
-  
+
       // Adicione as imagens de etapa2 ao FormData
       Object.entries(values.etapa2).forEach(([key, fileUri]) => {
         const file = {
@@ -83,53 +85,65 @@ const MyForm = () => {
         };
         formData.append(`etapa2.${key}`, file);
       });
-  
+
       // Verifique as variáveis da etapa2 antes do envio
       console.log('Variáveis da etapa2:', values.etapa2);
-  
+
       console.log('Dados a serem enviados:', formData);
-  
-      const response = await fetch('http://192.168.1.9/api/v1/app/react', {
+
+      const response = await fetch('http://172.26.94.98/api/v1/app/react', {
         method: 'POST',
         headers: {
           'Content-Type': 'multipart/form-data',
         },
         body: formData,
       });
-  
+
       const data = await response.json();
       console.log('Resposta da API:', data); // Exemplo de uso da resposta da API
-  
+
     } catch (error) {
       console.error('Erro ao enviar os dados:', error);
     }
     setSubmitting(false);
   };
+  const handleTakePhoto = async (field, setValues) => {
+    try {
+      const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+    
+      if (permissionResult.granted === false) {
+        // Permissão negada, trate esse caso de acordo com a sua necessidade
+        return;
+      }
+    
+      const photo = await ImagePicker.launchCameraAsync();
+      
+      if (photo && !photo.cancelled) {
+        const file = {
+          uri: photo.assets[0].uri,
+          type: 'image/jpeg',
+          name: photo.assets[0].uri.split('/').pop(),
+        };
   
-
-
-
-
-
-
-
-
-
-
-  const takePhoto = async (camera) => {
-    if (camera) {
-      const photo = await camera.takePictureAsync();
-
-      // Atribua a foto capturada à variável correspondente
-      initialValues.etapa2.foto_doc_frente = photo.uri;
-      initialValues.etapa2.foto_doc_verso = photo.uri;
-      initialValues.etapa2.foto_doc_facial = photo.uri;
-      // ... repita o processo para as outras fotos
-
-      setCapturedPhoto(photo);
-      setShowCamera(false); // Esconde a câmera após a captura da foto
+        setValues((prevValues) => {
+          const updatedValues = {
+            ...prevValues,
+            etapa2: {
+              ...prevValues.etapa2,
+              [field]: file,
+            },
+          };
+  
+          return updatedValues;
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao tirar a foto:', error);
     }
   };
+  
+  
+  
 
 
   const handleSearchCep = async (values, setFieldValue) => {
@@ -149,7 +163,7 @@ const MyForm = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`http://192.168.1.9/api/serve/cpf?cpf=${cpf}`);
+        const response = await fetch(`http://172.26.94.98/api/serve/cpf?cpf=${cpf}`);
         console.log('Enviando requisição:', { cpf: cpf });
         if (response.ok) {
           const data = await response.json();
@@ -203,7 +217,7 @@ const MyForm = () => {
   return (
     <ScrollView>
       <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-        {({ values, isSubmitting, setFieldValue, setservidorData, setSubmitting }) => (
+        {({ values, isSubmitting, setValues ,setFieldValue, setservidorData, setSubmitting }) => (
 
           <View style={styles.container}>
             {etapaAtual === 1 && (
@@ -375,24 +389,25 @@ const MyForm = () => {
 
                 <TouchableOpacity
                   style={[styles.buttonCamera, initialValues.etapa2.foto_doc_frente && styles.buttonCameraGreen]}
-                  onPress={() => setShowCamera(true)}
+                  onPress={() => handleTakePhoto('foto_doc_frente')}
                 >
                   <Text style={styles.buttonText}>Frente do documento</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   style={[styles.buttonCamera, initialValues.etapa2.foto_doc_verso && styles.buttonCameraGreen]}
-                  onPress={() => setShowCamera(true)}
+                  onPress={() => handleTakePhoto('foto_doc_verso')}
                 >
                   <Text style={styles.buttonText}>Verso do documento</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   style={[styles.buttonCamera, initialValues.etapa2.foto_doc_facial && styles.buttonCameraGreen]}
-                  onPress={() => setShowCamera(true)}
+                  onPress={() => handleTakePhoto('foto_doc_facial')}
                 >
                   <Text style={styles.buttonText}>Foto segurando o documento</Text>
                 </TouchableOpacity>
+
 
                 <TouchableOpacity style={styles.button} onPress={voltarEtapa}>
                   <Text style={styles.buttonText}>Etapa Anterior</Text>

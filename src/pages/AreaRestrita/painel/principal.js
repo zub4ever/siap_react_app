@@ -10,7 +10,7 @@ function Inicio({ navigation, route }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`http://192.168.1.9/api/serve/cpf?cpf=${cpf}`);
+        const response = await fetch(`http://172.26.94.98/api/serve/cpf?cpf=${cpf}`);
         console.log('Enviando requisição:', { cpf: cpf });
         if (response.ok) {
           const data = await response.json();
@@ -29,6 +29,11 @@ function Inicio({ navigation, route }) {
   const handleProvaDeVida = () => {
     navigation.navigate('ProvaVida');
     navigation.navigate('FormProvaVida', { cpf: cpf });
+
+  };
+  const handleProvaDeVida1 = () => {
+    navigation.navigate('MyCamera');
+///;/navigation.navigate('FormProvaVida', { cpf: cpf });
 
   };
 
@@ -61,6 +66,15 @@ function Inicio({ navigation, route }) {
       >
         <Text style={styles.cardText}>Prova de Vida</Text>
       </TouchableOpacity>
+
+
+      <TouchableOpacity
+        style={[styles.cardContainer, { backgroundColor: 'rgb(0, 123, 255)' }]}
+        onPress={handleProvaDeVida1}
+      >
+        <Text style={styles.cardText}>MyCamera</Text>
+      </TouchableOpacity>
+
     </View>
   );
 
