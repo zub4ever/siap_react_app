@@ -9,27 +9,7 @@ import moment from 'moment';
 import { TextInputMask } from 'react-native-masked-text';
 
 
-const initialValues = {
-  etapa1: {
-    cep: '',
-    nr_telefone: '',
-    rua: '',
-    numero: '',
-    complemento: '',
-    bairro: '',
-    cidade: '',
-    estado: ''
-  },
-  etapa2: {
-    nm_servidor: '',
-    matricula: '',
-    cpf: '',
-    data_nascimento: '',
-    foto_doc_frente: '',
-    foto_doc_verso: '',
-    foto_doc_facial: '',
-  }
-};
+
 
 
 const MyForm = () => {
@@ -41,8 +21,9 @@ const MyForm = () => {
   const [capturedPhoto, setCapturedPhoto] = useState(null);
   const [foto_doc_frente, setFotoDocFrente] = useState(null);
   const [foto_doc_verso, setFotoDocVerso] = useState(null);
-  const [foto_com_documento, setFotoComDocumento] = useState(null);
+  const [foto_doc_facial, setFotoFacial] = useState(null);
   const [servidorData, setServidorData] = useState({});
+  let cameraRef = null;
 
   const route = useRoute();
   const { cpf } = route.params;
@@ -62,10 +43,63 @@ const MyForm = () => {
     setEtapaAtual(etapaAtual - 1);
   };
 
+  const initialValues = {
+    etapa1: {
+      nm_servidor: '',
+      matricula: '',
+      cpf: '',
+      data_nascimento: '',
+      cep: '',
+      nr_telefone: '',
+      rua: '',
+      numero: '',
+      complemento: '',
+      bairro: '',
+      cidade: '',
+      estado: ''
+    },
+    etapa2: {
+      foto_doc_frente: '',
+      foto_doc_verso: '',
+      foto_doc_facial: '',
+    }
+  };
+
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
-      const response = await axios.post('https://172.26.94.98/v1/storeDados/app/react', values);
-      console.log(response.data); // Exemplo de uso da resposta da API
+      const formData = new FormData();
+  
+      // Adicione os campos de etapa1 ao FormData
+      Object.entries(values.etapa1).forEach(([key, value]) => {
+        formData.append(`etapa1.${key}`, value);
+      });
+  
+      // Adicione as imagens de etapa2 ao FormData
+      Object.entries(values.etapa2).forEach(([key, fileUri]) => {
+        const file = {
+          uri: fileUri,
+          type: 'image/jpeg',
+          name: fileUri.split('/').pop(),
+        };
+        formData.append(`etapa2.${key}`, file);
+      });
+  
+      // Verifique as variáveis da etapa2 antes do envio
+      console.log('Variáveis da etapa2:', values.etapa2);
+  
+      console.log('Dados a serem enviados:', formData);
+  
+      const response = await fetch('http://192.168.1.9/api/v1/app/react', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        body: formData,
+      });
+  
+      const data = await response.json();
+      console.log('Resposta da API:', data); // Exemplo de uso da resposta da API
+  
     } catch (error) {
       console.error('Erro ao enviar os dados:', error);
     }
@@ -75,11 +109,29 @@ const MyForm = () => {
 
 
 
-  const handleCapture = async (camera) => {
-    const photo = await camera.takePictureAsync();
-    setCapturedPhoto(photo);
-    setShowModal(true);
+
+
+
+
+
+
+
+  const takePhoto = async (camera) => {
+    if (camera) {
+      const photo = await camera.takePictureAsync();
+
+      // Atribua a foto capturada à variável correspondente
+      initialValues.etapa2.foto_doc_frente = photo.uri;
+      initialValues.etapa2.foto_doc_verso = photo.uri;
+      initialValues.etapa2.foto_doc_facial = photo.uri;
+      // ... repita o processo para as outras fotos
+
+      setCapturedPhoto(photo);
+      setShowCamera(false); // Esconde a câmera após a captura da foto
+    }
   };
+
+
   const handleSearchCep = async (values, setFieldValue) => {
     const cep = values.etapa1.cep.replace(/\D/g, '');
     try {
@@ -97,16 +149,16 @@ const MyForm = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`http://172.26.94.98/api/serve/cpf?cpf=${cpf}`);
+        const response = await fetch(`http://192.168.1.9/api/serve/cpf?cpf=${cpf}`);
         console.log('Enviando requisição:', { cpf: cpf });
         if (response.ok) {
           const data = await response.json();
           setServidorData(data);
         } else {
-          console.error('Erro na requisição:', response.status);
+          console.error('Erro na requisisssção:', response.status);
         }
       } catch (error) {
-        console.error('Erro na requisição:', error);
+        console.error('Erro na requisisssção:', error);
       }
     };
 
@@ -120,12 +172,12 @@ const MyForm = () => {
       } else if (!foto_doc_verso) {
         setFotoDocVerso(capturedPhoto);
       } else if (!foto_com_documento) {
-        setFotoComDocumento(capturedPhoto);
+        setFotoFacial(capturedPhoto);
       }
     }
     setShowModal(false);
     setShowCamera(false);
-    console.log("Foto capturada:", capturedPhoto);
+
   };
 
   useEffect(() => {
@@ -151,7 +203,7 @@ const MyForm = () => {
   return (
     <ScrollView>
       <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-        {({ values, isSubmitting, setFieldValue, setservidorData, setSubmitting  }) => (
+        {({ values, isSubmitting, setFieldValue, setservidorData, setSubmitting }) => (
 
           <View style={styles.container}>
             {etapaAtual === 1 && (
@@ -217,7 +269,7 @@ const MyForm = () => {
                         dddMask: '(99) ',
                       }}
                       onChangeText={field.onChange(field.name)}
-                      value={field.value.nr_telefone}
+                      value={values.etapa1.nr_telefone}
                     />
                   )}
                 </Field>
@@ -321,35 +373,30 @@ const MyForm = () => {
                 {/* Campos de entrada para dados de identificação */}
                 {/* ... */}
 
-
-
                 <TouchableOpacity
-                  style={[styles.buttonCamera, foto_doc_frente && styles.buttonCameraGreen]}
+                  style={[styles.buttonCamera, initialValues.etapa2.foto_doc_frente && styles.buttonCameraGreen]}
                   onPress={() => setShowCamera(true)}
                 >
                   <Text style={styles.buttonText}>Frente do documento</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.buttonCamera, foto_doc_verso && styles.buttonCameraGreen]}
+                  style={[styles.buttonCamera, initialValues.etapa2.foto_doc_verso && styles.buttonCameraGreen]}
                   onPress={() => setShowCamera(true)}
                 >
                   <Text style={styles.buttonText}>Verso do documento</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.buttonCamera, foto_com_documento && styles.buttonCameraGreen]}
+                  style={[styles.buttonCamera, initialValues.etapa2.foto_doc_facial && styles.buttonCameraGreen]}
                   onPress={() => setShowCamera(true)}
                 >
                   <Text style={styles.buttonText}>Foto segurando o documento</Text>
                 </TouchableOpacity>
 
-
-
                 <TouchableOpacity style={styles.button} onPress={voltarEtapa}>
                   <Text style={styles.buttonText}>Etapa Anterior</Text>
                 </TouchableOpacity>
-
 
                 <TouchableOpacity
                   style={styles.button}
@@ -358,7 +405,6 @@ const MyForm = () => {
                 >
                   <Text style={styles.buttonText}>Enviar</Text>
                 </TouchableOpacity>
-
               </View>
             )}
 
@@ -386,13 +432,9 @@ const MyForm = () => {
                       <FontAwesome name="exchange" size={20} color="#fff" />
                       <Text style={styles.buttonText}>Trocar</Text>
                     </View>
-
                   </TouchableOpacity>
                 </Camera>
-                <TouchableOpacity
-                  style={styles.captureButton}
-                  onPress={() => handleCapture(camera)}
-                >
+                <TouchableOpacity style={styles.captureButton} onPress={() => takePhoto(camera)}>
                   <FontAwesome name="camera" size={20} color="#fff" />
                 </TouchableOpacity>
               </View>
